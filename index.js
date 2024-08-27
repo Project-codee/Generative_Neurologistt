@@ -1,19 +1,50 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
-import 'bootstrap/dist/css/bootstrap.min.css';
+let express = require('express');
+let app = express();
+let allroutes = require('./allroutes');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const dotenv = require("dotenv");
+
+dotenv.config();
+app.use(express.json());
 
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+let corspolicy = {
+    origin:"http://localhost:3000"
+}
+app.use(cors(corspolicy));
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+
+app.use((req,res,next) => {
+    console.log(" Request received at " + (new Date()));
+    next();
+});
+
+// connect
+let db = async () => { 
+    try{ 
+        
+        // console.log(process.env.DBURI);
+        await mongoose.connect(process.env.DBURI);
+        console.log(" connected to database");
+    }
+    catch(err) {
+        console.log(' error connecting');
+    }
+}
+db();
+
+
+
+app.use('/',allroutes);
+
+// connect to the database
+// schema
+// model
+// from middleware, use model to get data from DB
+const port = process.env.PORT || 3001; // Use the port provided by Vercel
+app.listen(port, () => {
+    console.log(`Backend server listening at port ${port}`);
+});
+
+// app.listen(3001,()=>{ console.log("Backend server listening at port 3001")});
